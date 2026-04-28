@@ -15,6 +15,15 @@
 </p>
 
 ---
+## GUI
+
+<br/>
+
+<p align="center">
+  <img src="assets/demo1.jpeg" width="600" alt="PhishGuard Additional Demo View" />
+  <br/>
+  <em>Checkpoint 4: Additional demo (demo1)</em>
+</p>
 
 ## 🚨 The Problem
 
