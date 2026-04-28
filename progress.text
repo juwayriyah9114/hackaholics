@@ -1,0 +1,9 @@
+Problem Statement
+Phishing attacks via email, SMS, and WhatsApp are surging in India, yet victims have no real-time tool to trace, analyze, or report them.
+•	Existing platforms cannot read phishing emails or extract sender IP from headers, leaving attack origins untraceable
+•	No tool currently geolocates the server and plots it on an India map for visual evidence
+•	Victims receive no physical alert — our system triggers an Arduino that flashes red and buzzes the moment a threat is detected
+•	Reporting is tedious and inaccessible — our AI writes a ready-to-submit complaint instantly via "Generate Police Complaint"
+•	A single click opens cybercrime.gov.in with the complaint pre-filled, reducing reporting time from hours to seconds
+Goal: A complete end-to-end phishing response tool that takes a user from threat detection to legal reporting in under a minute.
+
