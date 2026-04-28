@@ -66,7 +66,7 @@ PhishGuard is an **end-to-end phishing response system** that takes a user from 
 - No way to miss it — even if your screen is minimized
 
 ### 📝 One-Click Police Complaint
-- Hits **"Generate Police Complaint"** and the AI writes a ready-to-submit FIR draft — complete with IP, timestamp, message content, and threat classification
+- Hit **"Generate Police Complaint"** and the AI writes a ready-to-submit FIR draft — complete with IP, timestamp, message content, and threat classification
 - A single click opens [cybercrime.gov.in](https://cybercrime.gov.in) with the complaint pre-filled
 - Reduces reporting time from **hours → seconds**
 
