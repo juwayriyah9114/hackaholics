@@ -27,6 +27,15 @@
 <a href="https://quail-unglazed-mutt.ngrok-free.dev" target="_blank" class="btn">
     🚀 Live Demo
 </a>
+</div>
+<!-- 🌐 Live Demo Section -->
+<div style="margin-top:20px; padding:15px; background:#020617; border-radius:10px; text-align:center;">
+    <p>🌐 Try the hosted version:</p>
+    <a href="https://quail-unglazed-mutt.ngrok-free.dev" target="_blank" 
+       style="color:#22c55e; font-weight:bold;">
+        https://quail-unglazed-mutt.ngrok-free.dev
+    </a>
+</div>
 
 ## 🚨 The Problem
 
