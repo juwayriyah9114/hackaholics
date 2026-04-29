@@ -1,3 +1,4 @@
+````markdown
 # 🛡️ ShieldAI — TechFusion 2.0 Hackathon Progress
 
 > **Team:** ShieldAI (PhishGuard v2.0) &nbsp;|&nbsp; **Event:** TechFusion 2.0 by Oculus Aegis &nbsp;|&nbsp; **Venue:** Dayananda Sagar Academy of Technology & Management, Bengaluru
@@ -6,16 +7,14 @@
 
 ## 📍 Overall Progress
 
-```
 Checkpoint 1 ██████████ ✅ Done
 Checkpoint 2 ██████████ ✅ Done
 Checkpoint 3 ██████████ ✅ Done
 Checkpoint 4 ██████████ ✅ Done
-Checkpoint 5 ██████░░░░ 🔄 In Progress
-Checkpoint 6 ░░░░░░░░░░ ⏳ Upcoming
-```
+Checkpoint 5 ██████████ ✅ Done
+Checkpoint 6 ██████████ ✅ Done
 
-**4 / 6 checkpoints complete**
+**6 / 6 checkpoints complete 🎉**
 
 ---
 
@@ -116,62 +115,59 @@ Four-layer threat detection pipeline fully operational:
 
 ---
 
-## 🔄 Checkpoint 5 — Stability & Debugging
-**🕒 06:00 AM · Day 2 (April 29) — IN PROGRESS**
+## ✅ Checkpoint 5 — Stability & Debugging
+**🕒 06:00 AM · Day 2 (April 29)**
 
-### Target deliverables
-- [ ] Wrap all Groq API calls in `try/except` with retry on rate limit
-- [ ] Handle `ip-api.com` timeout gracefully (fallback message, no crash)
-- [ ] Test Arduino disconnect → "Reconnect Arduino" button → serial re-established
-- [ ] Verify bulk scanner handles malformed/empty URLs without breaking
-- [ ] Run all 6 built-in test cases and confirm correct output:
-  - [ ] Phishing URL → HIGH threat
-  - [ ] Scam SMS → HIGH threat
-  - [ ] Fake Email → HIGH threat
-  - [ ] Safe Email → LOW / SAFE
-  - [ ] UPI Scam → HIGH threat
-  - [ ] Real Bank SMS → SAFE
-- [ ] End-to-end scan time confirmed under 2 seconds
-- [ ] QR decode error handled gracefully (bad image / unreadable QR)
+### What we completed
+- [x] Wrapped all Groq API calls in `try/except` with retry on rate limit
+- [x] Handled `ip-api.com` timeout gracefully (fallback message, no crash)
+- [x] Tested Arduino disconnect → "Reconnect Arduino" button → serial re-established
+- [x] Bulk scanner handles malformed/empty URLs without breaking
+- [x] All 6 built-in test cases passing:
+  - [x] Phishing URL → HIGH threat
+  - [x] Scam SMS → HIGH threat
+  - [x] Fake Email → HIGH threat
+  - [x] Safe Email → SAFE
+  - [x] UPI Scam → HIGH threat
+  - [x] Real Bank SMS → SAFE
+- [x] End-to-end scan time confirmed under 2 seconds
+- [x] QR decode error handled gracefully
 
 ### Status
 | Item | Status |
 |---|---|
-| Error handling & retries | 🔄 In progress |
-| Arduino reconnect test | 🔄 In progress |
-| All 6 test cases passing | 🔄 In progress |
-| Sub-2-second scan verified | 🔄 In progress |
+| Error handling & retries | ✅ |
+| Arduino reconnect test | ✅ |
+| All 6 test cases passing | ✅ |
+| Sub-2-second scan verified | ✅ |
 
 ---
 
-## ⏳ Checkpoint 6 — Pre-Final Build Stage
-**🕒 09:00 AM · Day 2 (April 29) — UPCOMING**
+## ✅ Checkpoint 6 — Pre-Final Build Stage
+**🕒 09:00 AM · Day 2 (April 29)**
 
-### Target deliverables
-- [ ] All code committed and pushed to GitHub
-- [ ] `assets/demo.jpeg` and `assets/SHIELD AI QR.png` present in repo
-- [ ] README live demo link updated with current ngrok URL
-- [ ] `requirements.txt` tested from a clean environment
-- [ ] `.env.example` present (no real keys committed)
-- [ ] `arduino/phishguard.ino` present and uploadable
-- [ ] ngrok tunnel running with browser-warning bypass:
-  ```bash
-  ngrok http 5000 --request-header-add "ngrok-skip-browser-warning: true"
-  ```
-- [ ] 60-second demo rehearsed:
+### What we completed
+- [x] All code committed and pushed to GitHub
+- [x] `assets/demo.jpeg` and `assets/SHIELD AI QR.png` present in repo
+- [x] README live demo link updated with current ngrok URL
+- [x] `requirements.txt` tested from a clean environment
+- [x] `.env.example` present (no real keys committed)
+- [x] `arduino/phishguard.ino` present and uploadable
+- [x] ngrok tunnel running with browser-warning bypass
+- [x] 60-second demo rehearsed:
   1. Open app → paste phishing URL
   2. Arduino fires RED LED + buzzer + LCD
   3. India map shows attacker server origin
   4. Generate Police Complaint → opens cybercrime.gov.in
-- [ ] No debug logs or test keys in final commit
+- [x] No debug logs or test keys in final commit
 
 ### Status
 | Item | Status |
 |---|---|
-| Final GitHub push | ⏳ |
-| README polished | ⏳ |
-| ngrok tunnel live | ⏳ |
-| Demo rehearsed | ⏳ |
+| Final GitHub push | ✅ |
+| README polished | ✅ |
+| ngrok tunnel live | ✅ |
+| Demo rehearsed | ✅ |
 
 ---
 
@@ -205,3 +201,4 @@ Four-layer threat detection pipeline fully operational:
 ---
 
 > Built with ❤️ to make India's internet safer — **ShieldAI / PhishGuard v2.0**
+````
