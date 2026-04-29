@@ -24,6 +24,9 @@
   <br/>
   <em>Checkpoint 4: Additional demo (demo1)</em>
 </p>
+<a href="https://quail-unglazed-mutt.ngrok-free.dev" target="_blank" class="btn">
+    🚀 Live Demo
+</a>
 
 ## 🚨 The Problem
 
