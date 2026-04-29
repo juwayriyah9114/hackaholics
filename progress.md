@@ -6,10 +6,18 @@
 ---
 
 ## 📸 Hardware Demo
-> PhishGuard Arduino Alert System — LCD displaying `PHISHING! THREAT DETECTED!`
-> Live demo: Arduino Uno + 16×2 LCD + Red/Green LEDs triggering a physical phishing alert in real time
 
----
+<p align="center">
+  <img src="assets/demo.jpeg" width="600" alt="PhishGuard Arduino Alert System — LCD displaying PHISHING! THREAT DETECTED!" />
+  <br/>
+  <em>Live demo: Arduino Uno + 16×2 LCD + Red/Green LEDs triggering a physical phishing alert in real time</em>
+</p>
+## LOQIN THROUTH QR
+<p align="center">
+  <img src="assets/SHEILD AI QR.png" width="200" alt="ShieldAI QR Code — Scan to open the live demo" />
+  <br/>
+  <em>📱 Scan to try the live demo instantly → <a href="https://quail-unglazed-mutt.ngrok-free.dev">quail-unglazed-mutt.ngrok-free.dev</a></em>
+</p>
 
 ## 🚀 Live Demo
 🌐 Try the hosted version:
