@@ -1,4 +1,3 @@
-````markdown
 # 🛡️ ShieldAI — TechFusion 2.0 Hackathon Progress
 
 > **Team:** ShieldAI (PhishGuard v2.0) &nbsp;|&nbsp; **Event:** TechFusion 2.0 by Oculus Aegis &nbsp;|&nbsp; **Venue:** Dayananda Sagar Academy of Technology & Management, Bengaluru
@@ -201,4 +200,3 @@ Four-layer threat detection pipeline fully operational:
 ---
 
 > Built with ❤️ to make India's internet safer — **ShieldAI / PhishGuard v2.0**
-````
