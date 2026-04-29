@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ShieldAI — Smart Threat Detection</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#05070d;--surface:#080c14;--card:#0c1221;--border:#111d2e;--border2:#1a2d45;
+  --green:#00e5a0;--red:#ff3f5b;--blue:#3b82f6;--purple:#8b5cf6;--yellow:#f59e0b;
+  --text:#e8eef8;--dim:#3d5166;--dim2:#607590;
+  --glow-green:rgba(0,229,160,.15);--glow-red:rgba(255,63,91,.15);--glow-blue:rgba(59,130,246,.15);
+}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;display:flex;flex-direction:column;position:relative}
+.g{font-family:'Space Grotesk',sans-serif}
+
+/* ANIMATED BACKGROUND */
+.bg-grid{position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:
+    radial-gradient(ellipse 60% 40% at 20% 50%,rgba(59,130,246,.04),transparent),
+    radial-gradient(ellipse 60% 40% at 80% 50%,rgba(139,92,246,.04),transparent),
+    linear-gradient(rgba(59,130,246,.015) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(59,130,246,.015) 1px,transparent 1px);
+  background-size:100% 100%,100% 100%,48px 48px,48px 48px}
+.scan-line{position:fixed;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,rgba(59,130,246,.4),transparent);animation:scanline 4s linear infinite;z-index:1;pointer-events:none}
+@keyframes scanline{0%{top:-2px}100%{top:100vh}}
+
+/* HEADER */
+header{position:relative;z-index:20;height:54px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;border-bottom:1px solid var(--border2);background:rgba(5,7,13,.95);backdrop-filter:blur(24px);flex-shrink:0}
+.logo{display:flex;align-items:center;gap:12px}
+.logo-shield{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#3b82f6,#00e5a0);display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 0 16px rgba(59,130,246,.3)}
+.logo-name{font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:800;letter-spacing:-.5px}
+.logo-name span{color:var(--dim2);font-weight:500}
+.logo-tag{font-size:10px;padding:2px 7px;border-radius:4px;background:rgba(59,130,246,.12);border:1px solid rgba(59,130,246,.25);color:#7aabf5;font-weight:600;letter-spacing:.5px}
+.header-center{display:flex;align-items:center;gap:6px}
+.header-right{display:flex;align-items:center;gap:10px}
+.status-chip{display:flex;align-items:center;gap:6px;padding:5px 11px;border-radius:20px;border:1px solid var(--border2);background:rgba(8,12,20,.8);font-size:11px;color:var(--dim2);transition:all .3s}
+.status-chip.connected{border-color:rgba(0,229,160,.25);color:var(--green)}
+.sdot{width:5px;height:5px;border-radius:50%;background:var(--red);transition:all .3s}
+.sdot.on{background:var(--green);box-shadow:0 0 6px rgba(0,229,160,.6)}
+.icon-btn{padding:5px 10px;border-radius:7px;border:1px solid var(--border2);background:rgba(8,12,20,.8);color:var(--dim2);font-size:12px;cursor:pointer;transition:all .2s;font-family:'Space Grotesk',sans-serif;font-weight:600}
+.icon-btn:hover{border-color:var(--blue);color:var(--blue)}
+
+/* LIVE STATS TICKER */
+.stats-ticker{position:relative;z-index:10;height:36px;display:flex;align-items:center;gap:0;border-bottom:1px solid var(--border);background:rgba(8,12,20,.9);flex-shrink:0;overflow:hidden}
+.ticker-label{padding:0 14px;font-size:10px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:1.5px;border-right:1px solid var(--border);height:100%;display:flex;align-items:center;white-space:nowrap;background:rgba(59,130,246,.05);flex-shrink:0}
+.ticker-items{display:flex;align-items:center;gap:0;overflow-x:auto;scrollbar-width:none;flex:1}
+.ticker-items::-webkit-scrollbar{display:none}
+.ticker-item{display:flex;align-items:center;gap:8px;padding:0 16px;border-right:1px solid var(--border);height:36px;white-space:nowrap}
+.ticker-val{font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:800}
+.ticker-val.red{color:var(--red)}
+.ticker-val.green{color:var(--green)}
+.ticker-val.blue{color:var(--blue)}
+.ticker-val.purple{color:var(--purple)}
+.ticker-sub{font-size:10px;color:var(--dim2)}
+
+/* MAIN LAYOUT */
+.main{flex:1;display:grid;grid-template-columns:1fr 290px;overflow:hidden;position:relative;z-index:5}
+
+/* SCAN AREA */
+.scan-area{display:flex;flex-direction:column;overflow:hidden}
+.nav-bar{display:flex;align-items:center;gap:4px;padding:10px 20px;border-bottom:1px solid var(--border);background:rgba(8,12,20,.5);flex-shrink:0}
+.nav-tab{padding:7px 14px;border-radius:7px;border:1px solid transparent;background:transparent;color:var(--dim2);font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap}
+.nav-tab:hover{color:var(--text);border-color:var(--border2)}
+.nav-tab.active{background:rgba(59,130,246,.12);border-color:rgba(59,130,246,.3);color:var(--blue)}
+.nav-tab.qr{}.nav-tab.qr.active{background:rgba(139,92,246,.1);border-color:rgba(139,92,246,.3);color:var(--purple)}
+.nav-tab.bulk.active{background:rgba(245,158,11,.08);border-color:rgba(245,158,11,.25);color:var(--yellow)}
+.nav-tab.dash.active{background:rgba(0,229,160,.08);border-color:rgba(0,229,160,.2);color:var(--green)}
+.content-area{flex:1;overflow-y:auto;padding:20px}
+.content-area::-webkit-scrollbar{width:4px}
+.content-area::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+
+/* PAGE */
+.page{display:none;flex-direction:column;gap:14px;animation:fadein .2s ease}
+.page.active{display:flex}
+@keyframes fadein{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* HERO TEXT */
+.hero{text-align:center;padding:10px 0 4px}
+.hero-title{font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:800;margin-bottom:6px;line-height:1.2}
+.hero-title .gradient{background:linear-gradient(90deg,#3b82f6,#00e5a0,#8b5cf6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-size:200%}
+.hero-sub{font-size:12px;color:var(--dim2);line-height:1.5}
+
+/* INPUT */
+.input-container{position:relative}
+.input-badge{position:absolute;top:11px;left:12px;z-index:3;font-size:10px;padding:3px 8px;border-radius:4px;font-family:'Space Grotesk',sans-serif;font-weight:700;letter-spacing:.5px;transition:all .3s;background:rgba(59,130,246,.15);border:1px solid rgba(59,130,246,.3);color:#7aabf5}
+.main-textarea{width:100%;min-height:100px;padding:34px 12px 12px;background:var(--card);border:1px solid var(--border2);border-radius:12px;color:var(--text);font-family:'Inter',sans-serif;font-size:13px;line-height:1.6;resize:none;outline:none;transition:all .3s}
+.main-textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px var(--glow-blue)}
+.main-textarea::placeholder{color:var(--dim)}
+.main-textarea.err{border-color:var(--red)!important;box-shadow:0 0 0 3px var(--glow-red)!important}
+.input-toolbar{display:flex;align-items:center;justify-content:space-between;margin-top:8px;gap:8px;flex-wrap:wrap}
+.input-left-tools{display:flex;gap:6px;align-items:center}
+.mini-btn{padding:4px 10px;border-radius:6px;border:1px solid var(--border2);background:var(--surface);color:var(--dim2);font-size:11px;cursor:pointer;transition:all .2s;font-family:'Space Grotesk',sans-serif;font-weight:600}
+.mini-btn:hover{border-color:var(--green);color:var(--green)}
+.char-info{font-size:10px;color:var(--dim)}
+.err-msg{color:var(--red);font-size:11px;margin-top:4px;display:none}
+.err-msg.show{display:block}
+
+/* SCAN BUTTON */
+.scan-btn{width:100%;padding:13px;background:linear-gradient(135deg,#2563eb,#3b82f6);color:#fff;border:none;border-radius:10px;font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all .3s;position:relative;overflow:hidden;letter-spacing:.3px}
+.scan-btn::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.12),transparent);opacity:0;transition:opacity .2s}
+.scan-btn:hover::after{opacity:1}
+.scan-btn:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(59,130,246,.4)}
+.scan-btn:active{transform:translateY(0)}
+.scan-btn:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
+.scan-btn.threat{background:linear-gradient(135deg,#dc2626,#ff3f5b)}
+.scan-btn.threat:hover{box-shadow:0 10px 28px rgba(255,63,91,.4)}
+.spin{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,.25);border-top-color:#fff;border-radius:50%;animation:sp .65s linear infinite;vertical-align:middle;margin-right:7px}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* EXAMPLES */
+.examples-section{display:flex;flex-direction:column;gap:6px}
+.examples-label{font-size:10px;color:var(--dim2);text-transform:uppercase;letter-spacing:1px}
+.examples-grid{display:flex;flex-wrap:wrap;gap:6px}
+.ex-chip{padding:5px 10px;border-radius:6px;border:1px solid var(--border2);background:var(--surface);color:var(--dim2);font-size:11px;cursor:pointer;transition:all .2s;font-weight:500}
+.ex-chip:hover{border-color:var(--blue);color:var(--blue);background:rgba(59,130,246,.05)}
+
+/* BULK */
+.bulk-counter{font-size:11px;color:var(--dim2);padding:6px 10px;background:var(--surface);border-radius:6px;border:1px solid var(--border)}
+.bulk-results{display:flex;flex-direction:column;gap:6px;max-height:300px;overflow-y:auto}
+.bulk-results::-webkit-scrollbar{width:3px}
+.bulk-results::-webkit-scrollbar-thumb{background:var(--border2)}
+.bulk-row{background:var(--card);border-radius:8px;padding:10px 13px;border-left:3px solid var(--border2);display:flex;align-items:center;gap:10px;animation:fadein .2s ease}
+.bulk-row.HIGH{border-color:var(--red)}
+.bulk-row.LOW{border-color:var(--green)}
+.bulk-row-text{flex:1;font-size:11px;color:var(--dim2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bulk-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;flex-shrink:0}
+.bulk-badge.HIGH{background:rgba(255,63,91,.12);color:var(--red)}
+.bulk-badge.LOW{background:rgba(0,229,160,.1);color:var(--green)}
+.bulk-score{font-size:10px;color:var(--dim2);flex-shrink:0}
+
+/* QR */
+.qr-card{background:var(--card);border:1px solid var(--border2);border-radius:12px;overflow:hidden}
+.qr-card-header{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.qr-card-title{font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:700}
+.qr-status-row{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--dim2)}
+.qr-sdot{width:5px;height:5px;border-radius:50%;background:var(--dim);transition:all .3s}
+.qr-sdot.live{background:var(--green);animation:qrpulse 1s infinite}
+@keyframes qrpulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(0,229,160,.4)}50%{opacity:.8;box-shadow:0 0 0 6px rgba(0,229,160,0)}}
+#qr-reader{width:100%}
+#qr-reader__dashboard{background:transparent!important;padding:4px!important}
+#qr-reader__dashboard_section_csr button,#qr-reader__dashboard_section_fsr button{background:var(--blue)!important;color:#fff!important;border:none!important;border-radius:7px!important;padding:7px 13px!important;font-family:'Space Grotesk',sans-serif!important;font-size:12px!important;cursor:pointer!important;margin:4px!important}
+#qr-reader__scan_region{border-radius:0!important}
+select{background:var(--card)!important;color:var(--text)!important;border:1px solid var(--border2)!important;border-radius:6px!important;padding:4px 8px!important;font-size:12px!important}
+.qr-controls-row{padding:12px 16px;display:flex;gap:8px;flex-wrap:wrap;border-top:1px solid var(--border)}
+.qr-ctrl-btn{padding:7px 13px;border-radius:7px;border:1px solid var(--border2);background:transparent;color:var(--dim2);font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s}
+.qr-ctrl-btn:hover{border-color:var(--blue);color:var(--blue)}
+.qr-ctrl-btn.go{background:var(--blue);color:#fff;border-color:var(--blue)}
+.qr-ctrl-btn.stop-btn{background:rgba(255,63,91,.08);color:var(--red);border-color:rgba(255,63,91,.3)}
+.qr-detected{padding:12px 16px;background:rgba(0,229,160,.05);border-top:1px solid rgba(0,229,160,.15);display:none}
+.qr-detected.show{display:block}
+.qr-detected-label{font-size:10px;color:var(--green);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px}
+.qr-detected-text{font-size:12px;color:var(--text);word-break:break-all;line-height:1.5}
+
+/* DASHBOARD */
+.dash-kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.kpi-card{background:var(--card);border:1px solid var(--border2);border-radius:10px;padding:14px}
+.kpi-title{font-size:10px;color:var(--dim2);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+.kpi-val{font-family:'Space Grotesk',sans-serif;font-size:30px;font-weight:800;line-height:1}
+.kpi-val.red{color:var(--red)}
+.kpi-val.green{color:var(--green)}
+.kpi-val.blue{color:var(--blue)}
+.kpi-val.purple{color:var(--purple)}
+.kpi-sub{font-size:10px;color:var(--dim2);margin-top:4px}
+.kpi-bar{height:3px;background:var(--border);border-radius:2px;margin-top:10px;overflow:hidden}
+.kpi-bar-fill{height:100%;border-radius:2px;transition:width 1s ease}
+.kpi-bar-fill.red{background:linear-gradient(90deg,#dc2626,#ff3f5b)}
+.kpi-bar-fill.green{background:linear-gradient(90deg,#059669,#00e5a0)}
+.dash-table-card{background:var(--card);border:1px solid var(--border2);border-radius:10px;overflow:hidden}
+.dash-table-header{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.dash-table-title{font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:700;color:var(--dim2);text-transform:uppercase;letter-spacing:1px}
+.dash-table-actions{display:flex;gap:6px}
+.dash-action-btn{padding:5px 10px;border-radius:6px;border:1px solid var(--border2);background:transparent;color:var(--dim2);font-size:11px;cursor:pointer;transition:all .2s;font-family:'Space Grotesk',sans-serif;font-weight:600}
+.dash-action-btn:hover{border-color:var(--green);color:var(--green)}
+table{width:100%;border-collapse:collapse;font-size:11px}
+th{text-align:left;padding:8px 12px;color:var(--dim2);font-weight:600;border-bottom:1px solid var(--border);text-transform:uppercase;letter-spacing:.5px;font-size:10px}
+td{padding:8px 12px;border-bottom:1px solid var(--border);color:var(--text)}
+tr:last-child td{border-bottom:none}
+.level-badge{font-size:9px;font-weight:700;padding:2px 7px;border-radius:4px}
+.level-badge.HIGH{background:rgba(255,63,91,.12);color:var(--red)}
+.level-badge.LOW{background:rgba(0,229,160,.1);color:var(--green)}
+
+/* RESULT OVERLAY */
+.overlay{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .3s}
+.overlay.show{opacity:1;pointer-events:all}
+.overlay-bg{position:absolute;inset:0;background:rgba(5,7,13,.94);backdrop-filter:blur(16px)}
+.result-card{position:relative;z-index:1;width:100%;max-width:580px;max-height:92vh;overflow-y:auto;border-radius:20px;border:1px solid var(--border2);animation:pop .4s cubic-bezier(.34,1.56,.64,1)}
+.result-card::-webkit-scrollbar{width:3px}
+.result-card::-webkit-scrollbar-thumb{background:var(--border2)}
+@keyframes pop{from{transform:scale(.88) translateY(20px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
+.result-card.HIGH{border-color:rgba(255,63,91,.35);box-shadow:0 0 80px rgba(255,63,91,.12),0 0 0 1px rgba(255,63,91,.1)}
+.result-card.LOW{border-color:rgba(0,229,160,.25);box-shadow:0 0 60px rgba(0,229,160,.08)}
+.result-hero{padding:28px 28px 20px;text-align:center}
+.result-hero.HIGH{background:linear-gradient(165deg,rgba(255,63,91,.1),rgba(5,7,13,0))}
+.result-hero.LOW{background:linear-gradient(165deg,rgba(0,229,160,.07),rgba(5,7,13,0))}
+.result-emoji{font-size:52px;display:block;margin-bottom:12px;animation:emoji-pop .5s cubic-bezier(.34,1.56,.64,1) .08s both}
+@keyframes emoji-pop{from{transform:scale(0) rotate(-10deg);opacity:0}to{transform:scale(1) rotate(0);opacity:1}}
+.result-headline{font-family:'Space Grotesk',sans-serif;font-size:26px;font-weight:800;margin-bottom:8px;letter-spacing:-.3px}
+.result-headline.HIGH{color:var(--red)}
+.result-headline.LOW{color:var(--green)}
+.result-meta-row{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.result-meta-chip{font-size:11px;padding:4px 10px;border-radius:5px;border:1px solid var(--border2);color:var(--dim2)}
+.result-expl{font-size:13px;line-height:1.65;color:var(--text);max-width:440px;margin:0 auto}
+.result-body{padding:0 28px 22px;background:var(--card)}
+.score-track{height:4px;background:var(--border);border-radius:2px;margin:18px 0;overflow:hidden}
+.score-fill{height:100%;border-radius:2px;transition:width 1.2s cubic-bezier(.34,1.56,.64,1)}
+.score-fill.HIGH{background:linear-gradient(90deg,#dc2626,#ff3f5b,#ff6b80)}
+.score-fill.LOW{background:linear-gradient(90deg,#059669,#00e5a0,#00f5a8)}
+.confidence-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.confidence-label{font-size:10px;color:var(--dim2);text-transform:uppercase;letter-spacing:1px}
+.confidence-pct{font-size:10px;color:var(--blue);font-weight:700}
+.confidence-track{height:3px;background:var(--border);border-radius:2px;flex:1;margin:0 10px;overflow:hidden}
+.confidence-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--blue),var(--purple));transition:width 1s ease}
+.type-chip{display:inline-flex;align-items:center;gap:5px;padding:4px 9px;border-radius:5px;background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.18);color:#7aabf5;font-size:11px;margin-bottom:12px}
+.flags-section{margin-bottom:14px}
+.flags-title{font-size:10px;color:var(--dim2);text-transform:uppercase;letter-spacing:1px;margin-bottom:7px}
+.flags-wrap{display:flex;flex-wrap:wrap;gap:5px}
+.flag-chip{padding:4px 9px;border-radius:5px;font-size:11px;background:rgba(255,63,91,.08);border:1px solid rgba(255,63,91,.18);color:#ff8a9f}
+.action-strip{background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.15);border-radius:8px;padding:12px 14px;font-size:12px;border-left:3px solid var(--blue);margin-bottom:16px;line-height:1.5}
+.action-strip strong{color:var(--blue)}
+.result-btns{display:flex;gap:7px;flex-wrap:wrap}
+.rbtn{padding:9px 13px;border-radius:8px;border:1px solid var(--border2);background:transparent;color:var(--dim2);font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;text-decoration:none;display:inline-flex;align-items:center;gap:5px}
+.rbtn:hover{border-color:var(--blue);color:var(--blue);background:rgba(59,130,246,.05)}
+.rbtn.danger{border-color:rgba(255,63,91,.25);color:var(--red)}
+.rbtn.danger:hover{background:rgba(255,63,91,.07)}
+.rbtn.copy-btn{border-color:rgba(245,158,11,.25);color:var(--yellow)}
+.rbtn.copy-btn:hover{background:rgba(245,158,11,.07)}
+.close-x{position:absolute;top:13px;right:13px;width:28px;height:28px;border-radius:7px;border:1px solid var(--border2);background:rgba(8,12,20,.8);color:var(--dim2);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;z-index:5}
+.close-x:hover{border-color:var(--red);color:var(--red)}
+
+/* SIDEBAR */
+.sidebar{border-left:1px solid var(--border);background:rgba(8,12,20,.9);display:flex;flex-direction:column;overflow:hidden;position:relative;z-index:5}
+.sb-section{padding:14px 16px;border-bottom:1px solid var(--border);flex-shrink:0}
+.sb-title{font-family:'Space Grotesk',sans-serif;font-size:10px;font-weight:700;color:var(--dim2);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px}
+.threat-meter{text-align:center}
+.meter-ring{width:88px;height:88px;border-radius:50%;border:3px solid var(--border2);display:flex;flex-direction:column;align-items:center;justify-content:center;margin:0 auto 10px;transition:all .6s cubic-bezier(.34,1.56,.64,1);position:relative}
+.meter-ring.HIGH{border-color:var(--red);box-shadow:0 0 20px rgba(255,63,91,.3),inset 0 0 20px rgba(255,63,91,.05);animation:meter-pulse .75s infinite}
+.meter-ring.LOW{border-color:var(--green);box-shadow:0 0 14px rgba(0,229,160,.2)}
+@keyframes meter-pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+.meter-num{font-family:'Space Grotesk',sans-serif;font-size:24px;font-weight:800;line-height:1}
+.meter-label{font-size:9px;color:var(--dim2);margin-top:1px}
+.meter-status{font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:700;color:var(--dim2);margin-bottom:10px}
+.meter-track{height:3px;background:var(--border);border-radius:2px;overflow:hidden}
+.meter-fill{height:100%;border-radius:2px;transition:width .8s ease}
+.hw-row{display:flex;flex-direction:column;gap:6px}
+.hw-button{width:100%;padding:7px 10px;background:transparent;border:1px solid var(--border2);color:var(--dim2);border-radius:7px;font-family:'Space Grotesk',sans-serif;font-size:11px;font-weight:600;cursor:pointer;transition:all .2s;text-align:left}
+.hw-button:hover{border-color:var(--blue);color:var(--blue)}
+.sb-hist-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px 0;flex-shrink:0}
+.hist-list{flex:1;overflow-y:auto;padding:8px 16px 16px}
+.hist-list::-webkit-scrollbar{width:3px}
+.hist-list::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+.hist-empty{text-align:center;color:var(--dim);font-size:11px;padding:20px 0}
+.hist-row{padding:8px 10px;border-radius:7px;border-left:3px solid var(--border2);background:var(--card);margin-bottom:5px;transition:all .2s}
+.hist-row.HIGH{border-color:var(--red)}
+.hist-row.LOW{border-color:var(--green)}
+.hist-row-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:2px}
+.hist-lvl{font-size:9px;font-weight:700}
+.hist-lvl.HIGH{color:var(--red)}.hist-lvl.LOW{color:var(--green)}
+.hist-time{font-size:9px;color:var(--dim)}
+.hist-txt{font-size:10px;color:var(--dim2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.clr-btn{font-size:10px;color:var(--dim);background:none;border:none;cursor:pointer;font-family:'Inter',sans-serif;padding:0}
+.clr-btn:hover{color:var(--red)}
+
+/* TOAST */
+.toast-container{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:2000;display:flex;flex-direction:column;align-items:center;gap:6px;pointer-events:none}
+.toast{padding:9px 16px;border-radius:8px;border:1px solid var(--border2);background:rgba(12,18,33,.95);font-size:12px;backdrop-filter:blur(12px);transform:translateY(20px);opacity:0;transition:all .25s;pointer-events:none;white-space:nowrap;max-width:90vw;overflow:hidden;text-overflow:ellipsis}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.ok{border-color:rgba(0,229,160,.3);color:var(--green)}
+.toast.err{border-color:rgba(255,63,91,.3);color:var(--red)}
+.toast.info{border-color:rgba(59,130,246,.3);color:var(--blue)}
+
+/* LIGHT MODE */
+body.light{--bg:#f0f4f8;--surface:#fff;--card:#f8fafc;--border:#e2e8f0;--border2:#cbd5e1;--text:#0f172a;--dim:#94a3b8;--dim2:#64748b;--glow-blue:rgba(59,130,246,.08);--glow-red:rgba(255,63,91,.08)}
+body.light header,body.light .sidebar{background:rgba(248,250,252,.95)}
+body.light .scan-line{opacity:.3}
+
+@media(max-width:900px){
+  .main{grid-template-columns:1fr}
+  .sidebar{display:none}
+  .content-area{padding:14px}
+  .hero-title{font-size:18px}
+}
+</style>
+</head>
+<body>
+<div class="bg-grid"></div>
+<div class="scan-line"></div>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">
+    <div class="logo-shield">🛡</div>
+    <div class="logo-name g">Shield<span>AI</span></div>
+    <div class="logo-tag">v2.0</div>
+  </div>
+  <div class="header-right">
+    <div class="status-chip" id="backendChip">
+      <div class="sdot" id="backendDot"></div>
+      <span id="backendLabel">Backend</span>
+    </div>
+    <div class="status-chip" id="arduinoChip">
+      <div class="sdot" id="arduinoDot"></div>
+      <span id="arduinoLabel">Arduino</span>
+    </div>
+    <button class="icon-btn" onclick="toggleTheme()" id="themeBtn">🌙 Theme</button>
+  </div>
+</header>
+
+<!-- STATS TICKER -->
+<div class="stats-ticker">
+  <div class="ticker-label">⚡ LIVE</div>
+  <div class="ticker-items">
+    <div class="ticker-item">
+      <div class="ticker-val red" id="tkThreats">0</div>
+      <div class="ticker-sub">Threats Today</div>
+    </div>
+    <div class="ticker-item">
+      <div class="ticker-val green" id="tkSafe">0</div>
+      <div class="ticker-sub">Safe Scans</div>
+    </div>
+    <div class="ticker-item">
+      <div class="ticker-val blue" id="tkTotal">0</div>
+      <div class="ticker-sub">Total Scans</div>
+    </div>
+    <div class="ticker-item">
+      <div class="ticker-val purple" id="tkAvgTime">—</div>
+      <div class="ticker-sub">Avg Response</div>
+    </div>
+    <div class="ticker-item">
+      <div class="ticker-val" id="tkAccuracy" style="color:var(--yellow)">—</div>
+      <div class="ticker-sub">Detection Rate</div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="scan-area">
+    <div class="nav-bar">
+      <button class="nav-tab active" id="tab-scan" onclick="goPage('scan')">⚡ Scan</button>
+      <button class="nav-tab bulk" id="tab-bulk" onclick="goPage('bulk')">📋 Bulk</button>
+      <button class="nav-tab qr" id="tab-qr" onclick="goPage('qr')">📷 QR Scanner</button>
+      <button class="nav-tab dash" id="tab-dash" onclick="goPage('dash')">📊 Dashboard</button>
+    </div>
+
+    <div class="content-area">
+
+      <!-- SCAN PAGE -->
+      <div class="page active" id="page-scan">
+        <div class="hero">
+          <div class="hero-title g">Detect <span class="gradient">Threats</span> Instantly</div>
+          <div class="hero-sub">Paste any URL, email, SMS or text — AI auto-detects & analyzes in seconds</div>
+        </div>
+        <div class="input-container">
+          <div class="input-badge" id="typeBadge">AUTO-DETECT</div>
+          <textarea class="main-textarea" id="mainInput" rows="5" placeholder="Paste anything here — URL, email body, SMS, WhatsApp message, or any suspicious content..." oninput="onInput(this)"></textarea>
+        </div>
+        <div class="input-toolbar">
+          <div class="input-left-tools">
+            <button class="mini-btn" onclick="pasteClip()">📋 Paste</button>
+            <button class="mini-btn" onclick="clearInput()">✕ Clear</button>
+            <span class="char-info" id="charCount">0 chars</span>
+          </div>
+          <span style="font-size:10px;color:var(--dim)">Ctrl+Enter to scan</span>
+        </div>
+        <div class="err-msg" id="errMsg">⚠️ Enter something to scan first</div>
+        <button class="scan-btn g" id="scanBtn" onclick="doScan()">⚡ SCAN NOW</button>
+        <div class="examples-section">
+          <div class="examples-label">Test Examples</div>
+          <div class="examples-grid">
+            <div class="ex-chip" onclick="loadEx('url')">🔗 Phishing URL</div>
+            <div class="ex-chip" onclick="loadEx('sms')">💬 Scam SMS</div>
+            <div class="ex-chip" onclick="loadEx('email')">📧 Fake Email</div>
+            <div class="ex-chip" onclick="loadEx('safe')">✅ Safe Email</div>
+            <div class="ex-chip" onclick="loadEx('upi')">💳 UPI Scam</div>
+            <div class="ex-chip" onclick="loadEx('bank')">🏦 Real Bank SMS</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BULK PAGE -->
+      <div class="page" id="page-bulk">
+        <div class="hero">
+          <div class="hero-title g">Bulk <span class="gradient">Scanner</span></div>
+          <div class="hero-sub">Scan up to 20 URLs or messages at once — one per line</div>
+        </div>
+        <div>
+          <textarea class="main-textarea" id="bulkInput" rows="8" placeholder="http://suspicious1.com&#10;URGENT: Your account blocked click here...&#10;From: fake@paypal.com Subject: Verify now..." oninput="updateBulkCount()"></textarea>
+          <div class="input-toolbar">
+            <div class="input-left-tools">
+              <button class="mini-btn" onclick="pasteBulk()">📋 Paste</button>
+              <div class="bulk-counter" id="bulkCounter">0 items</div>
+            </div>
+          </div>
+        </div>
+        <button class="scan-btn g" id="bulkBtn" onclick="doBulk()">⚡ SCAN ALL</button>
+        <div class="bulk-results" id="bulkResults"></div>
+      </div>
+
+      <!-- QR PAGE -->
+      <div class="page" id="page-qr">
+        <div class="hero">
+          <div class="hero-title g">QR Code <span class="gradient">Blocker</span></div>
+          <div class="hero-sub">Scan a QR code with your camera or upload an image — ShieldAI checks where it leads before you open it</div>
+        </div>
+        <div class="qr-card">
+          <div class="qr-card-header">
+            <div class="qr-card-title g">📷 Camera Scanner</div>
+            <div class="qr-status-row">
+              <div class="qr-sdot" id="qrDot"></div>
+              <span id="qrStatus">Ready</span>
+            </div>
+          </div>
+          <div id="qr-reader"></div>
+          <div class="qr-controls-row">
+            <button class="qr-ctrl-btn go" id="qrStartBtn" onclick="startQR()">▶ Start Camera</button>
+            <button class="qr-ctrl-btn stop-btn" id="qrStopBtn" onclick="stopQR()" style="display:none">⏹ Stop</button>
+            <button class="qr-ctrl-btn" onclick="document.getElementById('qrFile').click()">📁 Upload QR Image</button>
+            <input type="file" id="qrFile" accept="image/*" style="display:none" onchange="qrUpload(this)">
+          </div>
+          <div class="qr-detected" id="qrDetected">
+            <div class="qr-detected-label">✓ QR Code Detected</div>
+            <div class="qr-detected-text" id="qrText"></div>
+          </div>
+        </div>
+        <button class="scan-btn g" id="qrAnalyzeBtn" onclick="analyzeQR()" disabled style="opacity:.4">🔍 Analyze QR Destination</button>
+      </div>
+
+      <!-- DASHBOARD PAGE -->
+      <div class="page" id="page-dash">
+        <div class="hero">
+          <div class="hero-title g">Threat <span class="gradient">Dashboard</span></div>
+          <div class="hero-sub">Live analytics from all your scans</div>
+        </div>
+        <div class="dash-kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-title">Threats Blocked</div>
+            <div class="kpi-val red" id="dashThreats">0</div>
+            <div class="kpi-sub">HIGH level detections</div>
+            <div class="kpi-bar"><div class="kpi-bar-fill red" id="dashThreatBar" style="width:0%"></div></div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-title">Safe Scans</div>
+            <div class="kpi-val green" id="dashSafe">0</div>
+            <div class="kpi-sub">LOW level results</div>
+            <div class="kpi-bar"><div class="kpi-bar-fill green" id="dashSafeBar" style="width:0%"></div></div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-title">Total Scans</div>
+            <div class="kpi-val blue" id="dashTotal">0</div>
+            <div class="kpi-sub">All time</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-title">Avg Scan Time</div>
+            <div class="kpi-val purple" id="dashAvg">—</div>
+            <div class="kpi-sub">milliseconds</div>
+          </div>
+        </div>
+        <div class="dash-table-card">
+          <div class="dash-table-header">
+            <div class="dash-table-title">Recent Logs</div>
+            <div class="dash-table-actions">
+              <button class="dash-action-btn" onclick="exportCSV()">📥 Export CSV</button>
+              <button class="dash-action-btn" onclick="loadDash()">🔄 Refresh</button>
+            </div>
+          </div>
+          <div style="overflow-x:auto">
+            <table>
+              <thead><tr><th>Time</th><th>Type</th><th>Level</th><th>Score</th><th>Summary</th></tr></thead>
+              <tbody id="dashTable"><tr><td colspan="5" style="text-align:center;color:var(--dim);padding:20px">Loading...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sb-section">
+      <div class="sb-title">Live Threat Meter</div>
+      <div class="threat-meter">
+        <div class="meter-ring" id="meterRing">
+          <div class="meter-num g" id="meterNum">—</div>
+          <div class="meter-label">score</div>
+        </div>
+        <div class="meter-status g" id="meterStatus">STANDBY</div>
+        <div class="meter-track"><div class="meter-fill" id="meterFill" style="width:0%"></div></div>
+      </div>
+    </div>
+    <div class="sb-section">
+      <div class="sb-title">Hardware Control</div>
+      <div class="hw-row">
+        <button class="hw-button" onclick="testHW()">⚡ Test Arduino LEDs</button>
+        <button class="hw-button" onclick="reconnectArduino()">🔄 Reconnect Arduino</button>
+      </div>
+    </div>
+    <div class="sb-hist-header">
+      <div class="sb-title" style="margin:0">Scan History</div>
+      <button class="clr-btn" onclick="clearHist()">Clear all</button>
+    </div>
+    <div class="hist-list" id="histList">
+      <div class="hist-empty">No scans yet</div>
+    </div>
+  </div>
+</div>
+
+<!-- RESULT OVERLAY -->
+<div class="overlay" id="overlay">
+  <div class="overlay-bg" onclick="closeResult()"></div>
+  <div class="result-card" id="resultCard">
+    <button class="close-x" onclick="closeResult()">✕</button>
+    <div class="result-hero" id="resultHero">
+      <span class="result-emoji" id="resultEmoji"></span>
+      <div class="result-headline g" id="resultHeadline"></div>
+      <div class="result-meta-row">
+        <div class="result-meta-chip" id="resultScoreChip"></div>
+        <div class="result-meta-chip" id="resultTimerChip"></div>
+        <div class="result-meta-chip" id="resultCatChip"></div>
+      </div>
+      <div class="result-expl" id="resultExpl"></div>
+    </div>
+    <div class="result-body">
+      <div class="score-track"><div class="score-fill" id="scoreFill" style="width:0%"></div></div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+        <span class="confidence-label">AI Confidence</span>
+        <div class="confidence-track"><div class="confidence-fill" id="confFill" style="width:0%"></div></div>
+        <span class="confidence-pct" id="confPct"></span>
+      </div>
+      <div id="resultType"></div>
+      <div id="resultFlags"></div>
+      <div id="resultAction"></div>
+      <div class="result-btns" id="resultBtns"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="/static/script.js"></script>
+</body>
+</html>
