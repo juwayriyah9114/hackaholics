@@ -6,12 +6,12 @@
 
 ## 📍 Overall Progress
 
-Checkpoint 1 ██████████ ✅ Done
-Checkpoint 2 ██████████ ✅ Done
-Checkpoint 3 ██████████ ✅ Done
-Checkpoint 4 ██████████ ✅ Done
-Checkpoint 5 ██████████ ✅ Done
-Checkpoint 6 ██████████ ✅ Done
+Checkpoint 1 ██████████ ✅ Done<br>
+Checkpoint 2 ██████████ ✅ Done<br>
+Checkpoint 3 ██████████ ✅ Done<br>
+Checkpoint 4 ██████████ ✅ Done<br>
+Checkpoint 5 ██████████ ✅ Done<br>
+Checkpoint 6 ██████████ ✅ Done<br>
 
 **6 / 6 checkpoints complete 🎉**
 
